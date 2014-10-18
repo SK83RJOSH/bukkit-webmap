@@ -27,6 +27,10 @@
                     'x' => $x,
                     'y' => $y
                 ));
+                $files[$world . '/players.json'] = array(
+                    array('last_updated' => time(), 'name' => 'SK83RJOSH', 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
+                    array('last_updated' => time(), 'name' => 'MalHT', 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
+                );
                 $files[$world . '/' . $x . '.' . $y . '.json'] = $blocks;
             }
         }
@@ -36,7 +40,7 @@
         $filename = __DIR__ . '/data/' . $file_name;
         $file_contents = json_encode($file_data, JSON_PRETTY_PRINT) . "\n";
 
-        if(!file_exists($filename)) {
+        if(!file_exists(pathinfo($filename, PATHINFO_DIRNAME))) {
             mkdir(pathinfo($filename, PATHINFO_DIRNAME), 0777, true);
         }
 
