@@ -1,5 +1,5 @@
 var canvas = false, context = false;
-var scale = 3, offsetX = 0, offsetY = 0;
+var scale = 3, offsetX = window.innerWidth / scale / 2, offsetY = window.innerHeight / scale / 2;
 var redraw = false;
 var delta = 0, lastFrameTime = 0;
 var chunks = [];
@@ -62,7 +62,7 @@ window.addEventListener('load', function() {
     // Some basic intialization
     var colors = [[255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255]];
 
-    for(var chunk = 0; chunk < Math.pow(Math.floor(window.innerWidth / scale / Chunk.Size), 2); chunk++) {
+    for(var chunk = 0; chunk < 25; chunk++) {
         var blocks = [];
 
         for(var x = 0; x < Chunk.Size; x++) {
@@ -74,12 +74,7 @@ window.addEventListener('load', function() {
         }
 
         chunks.push(
-            new Chunk(
-                context,
-                chunk % Math.floor(window.innerWidth / scale / Chunk.Size),
-                Math.floor(chunk / Math.floor(window.innerWidth / scale / Chunk.Size)),
-                blocks
-            )
+            new Chunk((chunk % 5) - 3.25, (Math.floor(chunk / 5)) - 3.25, blocks)
         );
     }
 
@@ -124,7 +119,7 @@ function update(time) {
         context.translate(offsetX, offsetY);
 
         chunks.forEach(function(chunk) {
-            chunk.render(offsetX, offsetY);
+            chunk.render(context, offsetX, offsetY);
         });
     context.restore();
 

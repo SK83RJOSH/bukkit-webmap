@@ -1,16 +1,10 @@
-function Block(x, y, color) {
-    this.x = x;
-    this.y = y;
-    this.color = color;
-}
-
-function Chunk(context, x, y, blocks) {
-    this.context = context;
+function Chunk(x, y, blocks) {
     this.x = x;
     this.y = y;
     this.blocks = blocks;
     this.canvas = document.createElement('canvas');
-    this.canvas.width = this.canvas.height = Chunk.Size;
+    this.canvas.width = Chunk.Size;
+    this.canvas.height = Chunk.Size;
 
     this.updateImageData();
 }
@@ -33,7 +27,7 @@ Chunk.prototype.updateImageData = function() {
     });
 };
 
-Chunk.prototype.render = function(offsetX, offsetY) {
-    this.context.imageSmoothingEnabled = this.context.mozImageSmoothingEnabled = this.context.webkitImageSmoothingEnabled = false;
-    this.context.drawImage(this.canvas, this.x * Chunk.Size, this.y * Chunk.Size);
+Chunk.prototype.render = function(context, offsetX, offsetY) {
+    context.imageSmoothingEnabled = context.mozImageSmoothingEnabled = context.webkitImageSmoothingEnabled = false;
+    context.drawImage(this.canvas, this.x * Chunk.Size, this.y * Chunk.Size);
 }
