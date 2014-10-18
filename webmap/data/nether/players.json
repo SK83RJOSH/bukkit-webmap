@@ -1,14 +1,22 @@
-[
-    {
-        "last_updated": 1413664606,
-        "name": "SK83RJOSH",
-        "x": 12,
-        "y": -3
+{
+    "SK83RJOSH": {
+        "last_updated": 1413674417,
+        "x": 7,
+        "y": -14
     },
-    {
-        "last_updated": 1413664606,
-        "name": "MalHT",
-        "x": 9,
-        "y": 15
+    "MalHT": {
+        "last_updated": 1413674417,
+        "x": 6,
+        "y": 1
+    },
+    "Ace_X": {
+        "last_updated": 1413674417,
+        "x": -6,
+        "y": -11
+    },
+    "Banana937": {
+        "last_updated": 1413674417,
+        "x": -14,
+        "y": 9
     }
-]
+}

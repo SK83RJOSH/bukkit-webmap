@@ -2,7 +2,11 @@ var canvas = false, context = false;
 var scale = 3, offsetX = window.innerWidth / scale / 2, offsetY = window.innerHeight / scale / 2;
 var redraw = false;
 var delta = 0, lastFrameTime = 0;
+
+var worlds = [];
 var chunks = [];
+var players = {};
+var currentWorld = false;
 
 window.addEventListener('load', function() {
     // Handle cross-browser compatibility
@@ -59,36 +63,104 @@ window.addEventListener('load', function() {
     // Instantiate canvas context
     context = canvas.getContext('2d');
 
-    // Some basic intialization
-    var colors = [[255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255]];
+    // Fetch intial data
+    fetchJSON('data/world-index.json', function(response) {
+        worlds = response;
+        currentWorld = response[0];
 
-    for(var chunk = 0; chunk < 25; chunk++) {
-        var blocks = [];
-
-        for(var x = 0; x < Chunk.Size; x++) {
-            for(var y = 0; y < Chunk.Size; y++) {
-                blocks.push(
-                    new Block(x, y, colors[Math.floor(Math.random() * colors.length)])
-                );
-            }
-        }
-
-        chunks.push(
-            new Chunk((chunk % 5) - 3.25, (Math.floor(chunk / 5)) - 3.25, blocks)
-        );
-    }
+        fetchChunks();
+        fetchPlayers();
+    });
 
     // Start drawing
     window.requestAnimationFrame(update);
 });
 
 window.addEventListener('resize', function() {
-    // Resize the canvas (not sure why CSS styles don't affect these values)
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     redrawCanvas();
 });
+
+function fetchJSON(url, callback) {
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('GET', url);
+    xhr.onreadystatechange = function() {
+        if(xhr.readyState == 4) {
+            if(xhr.status == 200) {
+                callback(JSON.parse(xhr.response));
+            }
+        }
+    };
+    xhr.send();
+}
+
+function fetchChunks() {
+    fetchJSON('data/' + currentWorld + '/chunk-index.json', function(response) {
+        for(var x in response) {
+            for(var y in response[x]) {
+                var chunk = response[x][y];
+
+                if(isChunkVisible(x, y)) {
+                    if(!chunks[x] || !chunks[x][y] || chunk.last_updated >= chunks[x][y].last_updated) {
+                        fetchJSON('data/' + currentWorld + '/' + x + '.' + y + '.json', function(response) {
+                            var blocks = [];
+
+                            response.forEach(function(block) {
+                                blocks.push(new Block(block.x, block.y, Block.IDtoColor(block.id)));
+                            });
+
+                            var x = blocks[0].x / Chunk.Size;
+                            var y = blocks[0].y / Chunk.Size;
+
+                            if(!chunks[x]) {
+                                chunks[x] = [];
+                            }
+
+                            chunks[x][y] = new Chunk(x, y, blocks);
+                            redrawCanvas();
+                        });
+                    }
+                }
+            }
+        }
+    });
+
+    setTimeout(fetchChunks, 5000);
+}
+
+function fetchPlayers() {
+    fetchJSON('data/' + currentWorld + '/players.json', function(response) {
+        for(var username in response) {
+            var player = response[username];
+
+            if(!players[username]) {
+                players[username] = new Player(username, player.x, player.y);
+
+                redrawCanvas();
+            } else {
+                players[username].x = player.x;
+                players[username].y = player.y;
+
+                redrawCanvas();
+            }
+        }
+    });
+
+    setTimeout(fetchPlayers, 5000);
+}
+
+function isChunkVisible(x, y) {
+    if(x >= Math.floor(-offsetX / Chunk.Size) && x <= Math.ceil(-offsetX / Chunk.Size) + Math.ceil(window.innerWidth / (Chunk.Size * scale))) {
+        if(y >= Math.floor(-offsetY / Chunk.Size) && y <= Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale))) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 function redrawCanvas() {
     if(!redraw) {
@@ -118,9 +190,19 @@ function update(time) {
         context.scale(scale, scale);
         context.translate(offsetX, offsetY);
 
-        chunks.forEach(function(chunk) {
-            chunk.render(context, offsetX, offsetY);
-        });
+        // Only render visible chunks
+        for(var x = Math.floor(-offsetX / Chunk.Size); x < Math.ceil(-offsetX / Chunk.Size) + Math.ceil(window.innerWidth / (Chunk.Size * scale)); x++) {
+            for(var y = Math.floor(-offsetY / Chunk.Size); y < Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale)); y++) {
+                if(chunks[x] && chunks[x][y]) {
+                    chunks[x][y].render(context);
+                }
+            }
+        }
+
+        // Render Players
+        for(var username in players) {
+            players[username].render(context);
+        }
     context.restore();
 
     // Display FPS

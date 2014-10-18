@@ -5,32 +5,35 @@
     $files['world-index.json'] = array('default', 'nether');
 
     foreach($files['world-index.json'] as $world) {
-        for($x = -1; $x < 1; $x++) {
-            $files[$world . '/chunk-index.json'] = array();
+        $files[$world . '/chunk-index.json'] = array();
 
-            for($y = -1; $y < 1; $y++) {
+        for($x = -8; $x < 8; $x++) {
+            for($y = -8; $y < 8; $y++) {
                 $blocks = array();
 
-                for($block_x = $x * 16; $block_x < ($x * 16) + 16; $block_x++) {
-                    for($block_y = $y * 16; $block_y < ($y * 16) + 16; $block_y++) {
+                for($block_x = 0; $block_x < 16; $block_x++) {
+                    for($block_y = 0; $block_y < 16; $block_y++) {
                         array_push($blocks, array(
-                            'last_updated' => time(),
-                            'block_type' => 'grass',
-                            'x' => $block_x,
-                            'y' => $block_y,
+                            'id' => rand(1, 3),
+                            'x' => ($x * 16) + $block_x,
+                            'y' => ($y * 16) + $block_y
                         ));
                     }
                 }
 
-                array_push($files[$world . '/chunk-index.json'], array(
+                $files[$world . '/players.json'] = array(
+                    'SK83RJOSH' => array('last_updated' => time(), 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
+                    'MalHT' => array('last_updated' => time(), 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
+                    'Ace_X' => array('last_updated' => time(), 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
+                    'Banana937' => array('last_updated' => time(), 'x' => rand(-16, 16), 'y' => rand(-16, 16))
+                );
+
+                $files[$world . '/chunk-index.json'][$x][$y] = array(
                     'last_updated' => time(),
                     'x' => $x,
                     'y' => $y
-                ));
-                $files[$world . '/players.json'] = array(
-                    array('last_updated' => time(), 'name' => 'SK83RJOSH', 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
-                    array('last_updated' => time(), 'name' => 'MalHT', 'x' => rand(-16, 16), 'y' => rand(-16, 16)),
                 );
+
                 $files[$world . '/' . $x . '.' . $y . '.json'] = $blocks;
             }
         }
@@ -38,7 +41,7 @@
 
     foreach($files as $file_name => $file_data) {
         $filename = __DIR__ . '/data/' . $file_name;
-        $file_contents = json_encode($file_data, JSON_PRETTY_PRINT) . "\n";
+        $file_contents = json_encode($file_data, JSON_PRETTY_PRINT);
 
         if(!file_exists(pathinfo($filename, PATHINFO_DIRNAME))) {
             mkdir(pathinfo($filename, PATHINFO_DIRNAME), 0777, true);
