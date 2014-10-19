@@ -9,5 +9,5 @@ function Player(username, x, y) {
 
 Player.prototype.render = function(context) {
     context.imageSmoothingEnabled = context.mozImageSmoothingEnabled = context.webkitImageSmoothingEnabled = false;
-    context.drawImage(this.image, this.x - (this.image.width / 2 * scale), this.y - (this.image.height / 2 * scale));
+    context.drawImage(this.image, this.x - (this.image.width / 2 / scale), this.y - (this.image.height / 2 / scale));
 }
