@@ -1,3 +1,9 @@
+@font-face {
+	font-family: 'Minecraft';
+	src: url('../fonts/minecraft.eot');
+	src: local('../fonts/minecraft'), url('../fonts/minecraft.woff') format('woff'), url('../fonts/minecraft.ttf') format('truetype');
+}
+
 #webmap {
     position: fixed;
     top: 0;

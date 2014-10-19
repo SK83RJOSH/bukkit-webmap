@@ -100,26 +100,27 @@ function fetchJSON(url, callback) {
 function fetchChunks() {
     fetchJSON('data/' + currentWorld + '/chunk-index.json', function(response) {
         for(var x in response) {
-            for(var y in response[x]) {
-                var chunk = response[x][y];
+            for(var z in response[x]) {
+                var chunk = response[x][z];
 
-                if(isChunkVisible(x, y)) {
-                    if(!chunks[x] || !chunks[x][y] || chunk.last_updated >= chunks[x][y].last_updated) {
-                        fetchJSON('data/' + currentWorld + '/' + x + '.' + y + '.json', function(response) {
+                if(isChunkVisible(x, z)) {
+                    if(!chunks[x] || !chunks[x][z] || chunk.last_updated >= chunks[x][z].last_updated) {
+                        fetchJSON('data/' + currentWorld + '/' + x + '.' + z + '.json', function(response) {
                             var blocks = [];
 
                             response.forEach(function(block) {
-                                blocks.push(new Block(block.x, block.y, Block.IDtoColor(block.id)));
+                                blocks.push(new Block(block.x, block.z, block.material));
                             });
 
+                            // This is a bit of a hack, but for some reason these variables are out of scope by the time this gets fired..
                             var x = blocks[0].x / Chunk.Size;
-                            var y = blocks[0].y / Chunk.Size;
+                            var z = blocks[0].z / Chunk.Size;
 
                             if(!chunks[x]) {
                                 chunks[x] = [];
                             }
 
-                            chunks[x][y] = new Chunk(x, y, blocks);
+                            chunks[x][z] = new Chunk(x, z, blocks); // TODO: Figure out why chunk is out of scope and pass last_updated into contructor
                             redrawCanvas();
                         });
                     }
@@ -137,12 +138,13 @@ function fetchPlayers() {
             var player = response[username];
 
             if(!players[username]) {
-                players[username] = new Player(username, player.x, player.y);
+                players[username] = new Player(username, player.x, player.z, player.last_updated);
 
                 redrawCanvas();
             } else {
                 players[username].x = player.x;
-                players[username].y = player.y;
+                players[username].z = player.z;
+                players[username].last_updated = player.last_updated;
 
                 redrawCanvas();
             }
@@ -152,9 +154,9 @@ function fetchPlayers() {
     setTimeout(fetchPlayers, 5000);
 }
 
-function isChunkVisible(x, y) {
+function isChunkVisible(x, z) {
     if(x >= Math.floor(-offsetX / Chunk.Size) && x <= Math.ceil(-offsetX / Chunk.Size) + Math.ceil(window.innerWidth / (Chunk.Size * scale))) {
-        if(y >= Math.floor(-offsetY / Chunk.Size) && y <= Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale))) {
+        if(z >= Math.floor(-offsetY / Chunk.Size) && z <= Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale))) {
             return true;
         }
     }
@@ -192,9 +194,9 @@ function update(time) {
 
         // Only render visible chunks
         for(var x = Math.floor(-offsetX / Chunk.Size); x < Math.ceil(-offsetX / Chunk.Size) + Math.ceil(window.innerWidth / (Chunk.Size * scale)); x++) {
-            for(var y = Math.floor(-offsetY / Chunk.Size); y < Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale)); y++) {
-                if(chunks[x] && chunks[x][y]) {
-                    chunks[x][y].render(context);
+            for(var z = Math.floor(-offsetY / Chunk.Size); z < Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale)); z++) {
+                if(chunks[x] && chunks[x][z]) {
+                    chunks[x][z].render(context);
                 }
             }
         }
@@ -206,7 +208,7 @@ function update(time) {
     context.restore();
 
     // Display FPS
-    context.font = '16pt Consolas';
+    context.font = '14pt Minecraft';
     context.fillStyle = 'white';
     context.textBaseline = 'top';
     context.fillText('FPS: ' + Math.round(1 / (delta / 1000)), 15, 15);
