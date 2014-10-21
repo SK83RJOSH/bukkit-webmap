@@ -1,12 +1,9 @@
 var canvas = false, context = false;
-var scale = 3, offsetX = window.innerWidth / scale / 2, offsetY = window.innerHeight / scale / 2;
 var redraw = false;
-var delta = 0, lastFrameTime = 0;
-
 var worlds = [];
-var chunks = [];
-var players = {};
 var currentWorld = false;
+
+// TODO: Implement UI & world switching
 
 window.addEventListener('load', function() {
     // Handle cross-browser compatibility
@@ -19,13 +16,13 @@ window.addEventListener('load', function() {
         var lastMouseY = event.clientY;
 
         function mousemove(event) {
-            offsetX += (event.clientX - lastMouseX) / scale;
+            if(currentWorld) {
+                currentWorld.translate(-(event.clientX - lastMouseX) / currentWorld.scale, -(event.clientY - lastMouseY) / currentWorld.scale);
+                redrawCanvas();
+            }
+
             lastMouseX = event.clientX;
-
-            offsetY += (event.clientY - lastMouseY) / scale;
             lastMouseY = event.clientY;
-
-            redrawCanvas();
         }
 
         function mouseup() {
@@ -38,19 +35,8 @@ window.addEventListener('load', function() {
     });
 
     function mousewheel(event) {
-        var oldScale = scale;
-
-        scale += Math.max(-1, Math.min(1, event.wheelDelta || -event.detail)) / 2;
-        scale = Math.min(4, Math.max(2, scale));
-
-        // Thanks to Vasiliy Stavenko (http://stackoverflow.com/questions/2916081/zoom-in-on-a-point-using-scale-and-translate)
-        if(oldScale != scale) {
-            var scaleFactor = scale - oldScale;
-            var scaleProduct = oldScale * oldScale + oldScale * scaleFactor;
-
-            offsetX = offsetX - ((event.clientX * scaleFactor) / scaleProduct);
-            offsetY = offsetY - ((event.clientY * scaleFactor) / scaleProduct);
-
+        if(currentWorld) {
+            currentWorld.zoom(Math.max(-1, Math.min(1, event.wheelDelta || -event.detail)) / 2);
             redrawCanvas();
         }
     }
@@ -66,14 +52,19 @@ window.addEventListener('load', function() {
     // Fetch intial data
     fetchJSON('data/world-index.json', function(response) {
         worlds = response;
-        currentWorld = response[0];
 
-        fetchChunks();
-        fetchPlayers();
+        if(response[0]) {
+            currentWorld = new World(response[0]);
+
+            currentWorld.translate(-canvas.width / currentWorld.scale / 2, -canvas.height / currentWorld.scale / 2);
+
+            fetchChunks();
+            fetchPlayers();
+        }
     });
 
     // Start drawing
-    window.requestAnimationFrame(update);
+    window.requestAnimationFrame(render);
 });
 
 window.addEventListener('resize', function() {
@@ -97,33 +88,38 @@ function fetchJSON(url, callback) {
     xhr.send();
 }
 
+// TODO: Move fetches into World
+
 function fetchChunks() {
-    fetchJSON('data/' + currentWorld + '/chunk-index.json', function(response) {
+    var world = currentWorld;
+
+    fetchJSON('data/' + currentWorld.name + '/chunk-index.json', function(response) {
+        if(world != currentWorld) { return; } // Prevent modifications if the world has changed
+
         for(var x in response) {
             for(var z in response[x]) {
                 var chunk = response[x][z];
 
-                if(isChunkVisible(x, z)) {
-                    if(!chunks[x] || !chunks[x][z] || chunk.last_updated >= chunks[x][z].last_updated) {
-                        fetchJSON('data/' + currentWorld + '/' + x + '.' + z + '.json', function(response) {
-                            var blocks = [];
+                if(currentWorld.isVisible(x * Chunk.Size, z * Chunk.Size)) {
+                    fetchJSON('data/' + currentWorld.name + '/' + x + '.' + z + '.json', function(response) {
+                        if(world != currentWorld) { return; } // Prevent modifications if the world has changed
 
-                            response.forEach(function(block) {
-                                blocks.push(new Block(block.x, block.z, block.material));
-                            });
+                        var blocks = [];
 
-                            // This is a bit of a hack, but for some reason these variables are out of scope by the time this gets fired..
-                            var x = blocks[0].x / Chunk.Size;
-                            var z = blocks[0].z / Chunk.Size;
-
-                            if(!chunks[x]) {
-                                chunks[x] = [];
-                            }
-
-                            chunks[x][z] = new Chunk(x, z, blocks); // TODO: Figure out why chunk is out of scope and pass last_updated into contructor
-                            redrawCanvas();
+                        response.forEach(function(block) {
+                            blocks.push(new Block(block.x, block.z, block.material));
                         });
-                    }
+
+                        var chunk = currentWorld.getChunk(blocks[0].x / Chunk.Size, blocks[0].z / Chunk.Size);
+
+                        if(!chunk) {
+                            var chunk = new Chunk(blocks[0].x / Chunk.Size, blocks[0].z / Chunk.Size);
+                            currentWorld.setChunk(chunk.x, chunk.z, chunk);
+                        }
+
+                        currentWorld.updateChunk(chunk.x, chunk.z, blocks);
+                        redrawCanvas();
+                    });
                 }
             }
         }
@@ -133,41 +129,22 @@ function fetchChunks() {
 }
 
 function fetchPlayers() {
-    fetchJSON('data/' + currentWorld + '/players.json', function(response) {
-        for(var username in response) {
-            var player = response[username];
+    var world = currentWorld;
 
-            if(!players[username]) {
-                players[username] = new Player(username, player.x, player.z, player.last_updated);
+    fetchJSON('data/' + currentWorld.name + '/players.json', function(players) {
+        if(world != currentWorld) { return; } // Prevent modifications if the world has changed
 
-                redrawCanvas();
-            } else {
-                players[username].x = player.x;
-                players[username].z = player.z;
-                players[username].last_updated = player.last_updated;
-
-                redrawCanvas();
-            }
-        }
+        currentWorld.updatePlayers(players);
+        redrawCanvas();
     });
 
     setTimeout(fetchPlayers, 5000);
 }
 
-function isChunkVisible(x, z) {
-    if(x >= Math.floor(-offsetX / Chunk.Size) && x <= Math.ceil(-offsetX / Chunk.Size) + Math.ceil(window.innerWidth / (Chunk.Size * scale))) {
-        if(z >= Math.floor(-offsetY / Chunk.Size) && z <= Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale))) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 function redrawCanvas() {
     if(!redraw) {
-        window.requestAnimationFrame(function(time) {
-            update(time);
+        window.requestAnimationFrame(function() {
+            render();
             redraw = false;
         });
 
@@ -175,11 +152,7 @@ function redrawCanvas() {
     }
 }
 
-function update(time) {
-    // Update times
-    delta = time - lastFrameTime;
-    lastFrameTime = time;
-
+function render(time) {
     // Reset the canvas
     canvas.width = canvas.width;
 
@@ -187,29 +160,7 @@ function update(time) {
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    context.save();
-        // Translate & Scale
-        context.scale(scale, scale);
-        context.translate(offsetX, offsetY);
-
-        // Only render visible chunks
-        for(var x = Math.floor(-offsetX / Chunk.Size); x < Math.ceil(-offsetX / Chunk.Size) + Math.ceil(window.innerWidth / (Chunk.Size * scale)); x++) {
-            for(var z = Math.floor(-offsetY / Chunk.Size); z < Math.ceil(-offsetY / Chunk.Size) + Math.ceil(window.innerHeight / (Chunk.Size * scale)); z++) {
-                if(chunks[x] && chunks[x][z]) {
-                    chunks[x][z].render(context);
-                }
-            }
-        }
-
-        // Render Players
-        for(var username in players) {
-            players[username].render(context);
-        }
-    context.restore();
-
-    // Display FPS
-    context.font = '14pt Minecraft';
-    context.fillStyle = 'white';
-    context.textBaseline = 'top';
-    context.fillText('FPS: ' + Math.round(1 / (delta / 1000)), 15, 15);
+    if(currentWorld) {
+        currentWorld.render(context);
+    }
 }

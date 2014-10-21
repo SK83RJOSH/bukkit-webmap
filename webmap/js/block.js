@@ -4,6 +4,8 @@ function Block(x, z, material) {
     this.material = material;
 }
 
+// TODO: Finish adding block colors
+
 Block.colors = {
     'UNKNOWN': [255, 0, 255, 255],
     'AIR': [0, 0, 0, 0],

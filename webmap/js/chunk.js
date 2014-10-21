@@ -1,14 +1,11 @@
-// TODO: Add last_updated to constructor
-function Chunk(x, z, blocks) {
+function Chunk(x, z) { // TODO: Add last_updated to constructor
     this.x = x;
     this.z = z;
-    this.blocks = blocks;
     this.last_updated = new Date().getTime() / 1000; // If the player isn't in the same timezone as the server this will result in constant or no updates..
+    this.blocks = [];
     this.canvas = document.createElement('canvas');
     this.canvas.width = Chunk.Size;
     this.canvas.height = Chunk.Size;
-
-    this.updateImageData();
 }
 
 Chunk.Size = 16;
@@ -29,7 +26,15 @@ Chunk.prototype.updateImageData = function() {
     });
 };
 
-// TODO: Optimize!
+Chunk.prototype.update = function(blocks) {
+    if(blocks) {
+        this.blocks = blocks;
+    }
+
+    this.updateImageData();
+}
+
+// TODO: Optimize & add shading (something similar to the maps ingame should be pretty easy -- just check the block height above / below this one)
 // This could be faster, although this is much faster than fillRect, this is still pretty slow..
 // Perhaps it's possible to use context.setImageData(...) and do some sort of progmatic scaling?
 // If all else fails, we could just retool this to use a 3D context w/ shaders.
