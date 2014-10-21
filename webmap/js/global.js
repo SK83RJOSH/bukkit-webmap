@@ -1,10 +1,10 @@
 var canvas = false;
 var context = false;
+var select = false;
+var range = false;
 var redraw = false;
 var worlds = [];
 var currentWorld = false;
-
-// TODO: Implement UI & world switching
 
 window.addEventListener('load', function() {
     // Handle cross-browser compatibility
@@ -55,9 +55,46 @@ window.addEventListener('load', function() {
         worlds = response;
 
         if(response[0]) {
+            // Setup World
             currentWorld = new World(response[0]);
-
+            currentWorld.setScale(3);
             currentWorld.translate(-canvas.width / currentWorld.scale / 2, -canvas.height / currentWorld.scale / 2);
+
+            // Setup Components
+            select = document.getElementById('world-selector');
+            select.innerHTML = '';
+
+            worlds.forEach(function(world) {
+                var option = document.createElement('option');
+                option.value = world;
+                option.text = world;
+                select.appendChild(option);
+            });
+
+            select.addEventListener('change', function() {
+                var scale = currentWorld.scale;
+                var translateX = currentWorld.translateX;
+                var translateY = currentWorld.translateY;
+
+                delete currentWorld;
+
+                currentWorld = new World(select.value);
+                currentWorld.setScale(scale);
+                currentWorld.setTranslation(translateX, translateY);
+
+                fetchChunks();
+                fetchPlayers();
+            });
+
+            range = document.getElementById('world-scale');
+            range.value = currentWorld.scale;
+            range.addEventListener('input', function() {
+                currentWorld.zoom(this.value - currentWorld.scale, window.innerWidth / 2, window.innerHeight / 2);
+                redrawCanvas();
+            });
+            setInterval(function() {
+                range.value = currentWorld.scale;
+            }, 100);
 
             // Start fetching
             fetchChunks();

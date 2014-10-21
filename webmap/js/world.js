@@ -50,14 +50,12 @@ World.prototype.updateChunk = function(x, z, blocks) {
         chunk.update(blocks);
 
         if(blocks) {
-            // TODO: Queue & sparsely process chunk updates (requestAnimationFrame works for now)
+            // TODO: Queue & sparsely process chunk updates
             for(neighborX = x - 1; neighborX < x + 1; neighborX++) {
                 for(neightborZ = z - 1; neightborZ < z + 1; neightborZ++) {
                     if(neighborX != x || neightborZ != z) {
-                        window.requestAnimationFrame(function() {
-                            this.updateChunk(neighborX, neightborZ);
-                            redrawCanvas();
-                        });
+                        // TODO: Restore functionality
+                        // this.updateChunk(neighborX, neightborZ);
                     }
                 }
             }

@@ -4,8 +4,58 @@
 	src: local('../fonts/minecraft'), url('../fonts/minecraft.woff') format('woff'), url('../fonts/minecraft.ttf') format('truetype');
 }
 
+html, body {
+	font-family: 'Minecraft', consolas, serif;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+header, footer {
+	position: absolute;
+	z-index: 9999;
+}
+
+header select {
+	position: fixed;
+	left: 10;
+	top: 10;
+}
+
+header input[type="range"] {
+	position: fixed;
+	right: -35;
+	top: 50;
+	width: 100px;
+	height: 20px;
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	transform: rotate(-90deg);
+}
+
 #webmap {
     position: fixed;
     top: 0;
     left: 0;
+}
+
+footer img {
+	position: fixed;
+	left: 10;
+	bottom: 10;
+	width: auto;
+	height: 30px;
+}
+
+footer p {
+	position: fixed;
+	right: 15;
+	bottom: 18;
+	font-size: 14px;
+	font-family: 'Minecraft', consolas, serif;
+	line-height: 14px;
+	color: gray;
 }
