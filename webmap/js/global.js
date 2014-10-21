@@ -1,4 +1,5 @@
-var canvas = false, context = false;
+var canvas = false;
+var context = false;
 var redraw = false;
 var worlds = [];
 var currentWorld = false;
@@ -36,7 +37,7 @@ window.addEventListener('load', function() {
 
     function mousewheel(event) {
         if(currentWorld) {
-            currentWorld.zoom(Math.max(-1, Math.min(1, event.wheelDelta || -event.detail)) / 2);
+            currentWorld.zoom(Math.max(-1, Math.min(1, event.wheelDelta || -event.detail)) / 2, event.clientX, event.clientY);
             redrawCanvas();
         }
     }
@@ -58,8 +59,12 @@ window.addEventListener('load', function() {
 
             currentWorld.translate(-canvas.width / currentWorld.scale / 2, -canvas.height / currentWorld.scale / 2);
 
+            // Start fetching
             fetchChunks();
+            setTimeout(fetchChunks, 15000);
+
             fetchPlayers();
+            setTimeout(fetchPlayers, 2500);
         }
     });
 
@@ -88,57 +93,42 @@ function fetchJSON(url, callback) {
     xhr.send();
 }
 
-// TODO: Move fetches into World
-
 function fetchChunks() {
     var world = currentWorld;
 
-    fetchJSON('data/' + currentWorld.name + '/chunk-index.json', function(response) {
-        if(world != currentWorld) { return; } // Prevent modifications if the world has changed
-
+    fetchJSON('data/' + world.name + '/chunk-index.json', function(response) {
         for(var x in response) {
             for(var z in response[x]) {
                 var chunk = response[x][z];
 
-                if(currentWorld.isVisible(x * Chunk.Size, z * Chunk.Size)) {
-                    fetchJSON('data/' + currentWorld.name + '/' + x + '.' + z + '.json', function(response) {
-                        if(world != currentWorld) { return; } // Prevent modifications if the world has changed
+                if(!world.getChunk(x, z) || chunk.last_updated > world.getChunk(x, z).last_updated) {
+                    if(!world.getChunk(x, z)) {
+                        world.setChunk(x, z, new Chunk(world, x, z, chunk.last_updated));
+                    }
 
+                    fetchJSON('data/' + world.name + '/' + x + '.' + z + '.json', function(response) {
                         var blocks = [];
 
                         response.forEach(function(block) {
                             blocks.push(new Block(block.x, block.z, block.material));
                         });
 
-                        var chunk = currentWorld.getChunk(blocks[0].x / Chunk.Size, blocks[0].z / Chunk.Size);
-
-                        if(!chunk) {
-                            var chunk = new Chunk(blocks[0].x / Chunk.Size, blocks[0].z / Chunk.Size);
-                            currentWorld.setChunk(chunk.x, chunk.z, chunk);
-                        }
-
-                        currentWorld.updateChunk(chunk.x, chunk.z, blocks);
+                        world.updateChunk(blocks[0].x / Chunk.Size, blocks[0].z / Chunk.Size, blocks);
                         redrawCanvas();
                     });
                 }
             }
         }
     });
-
-    setTimeout(fetchChunks, 5000);
 }
 
 function fetchPlayers() {
     var world = currentWorld;
 
-    fetchJSON('data/' + currentWorld.name + '/players.json', function(players) {
-        if(world != currentWorld) { return; } // Prevent modifications if the world has changed
-
-        currentWorld.updatePlayers(players);
+    fetchJSON('data/' + world.name + '/players.json', function(players) {
+        world.updatePlayers(players);
         redrawCanvas();
     });
-
-    setTimeout(fetchPlayers, 5000);
 }
 
 function redrawCanvas() {

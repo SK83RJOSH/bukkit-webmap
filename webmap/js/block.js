@@ -6,7 +6,7 @@ function Block(x, z, material) {
 
 // TODO: Finish adding block colors
 
-Block.colors = {
+Block.Colors = {
     'UNKNOWN': [255, 0, 255, 255],
     'AIR': [0, 0, 0, 0],
     'STONE': [116, 116, 116, 255],
@@ -183,5 +183,5 @@ Block.colors = {
 };
 
 Block.prototype.getColor = function() {
-    return Block.colors[this.material] || Block.colors['UNKNOWN'];
+    return Block.Colors[this.material] || Block.Colors['UNKNOWN'];
 }

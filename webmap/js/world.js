@@ -49,29 +49,32 @@ World.prototype.updateChunk = function(x, z, blocks) {
     if(chunk) {
         chunk.update(blocks);
 
-        if(blocks && false) { // TODO: We'll want to push these updates once shading is implemented
-            this.updateChunk(x - 1, z);
-            this.updateChunk(x, z - 1);
-            this.updateChunk(x + 1, z);
-            this.updateChunk(x, z + 1);
+        if(blocks) {
+            // TODO: Queue & sparsely process chunk updates
+            // for(neighborX = x - 1; neighborX < x + 1; neighborX++) {
+            //     for(neightborZ = z - 1; neightborZ < z + 1; neightborZ++) {
+            //         if(neighborX != x || neightborZ != z) {
+            //             this.updateChunk(neighborX, neightborZ);
+            //         }
+            //     }
+            // }
         }
     }
 }
 
-// TODO: Decide whether or not setBlock should exist
-
 World.prototype.getBlock = function(x, z) {
     var chunk = this.getChunk(Math.floor(x / Chunk.Size), Math.floor(z / Chunk.Size));
+    var result = false;
 
     if(chunk) {
-        chunk.getBlocks().forEach(function(block) {
+        chunk.blocks.forEach(function(block) {
             if(block.x == x && block.z == z) {
-                return block;
+                result = block;
             }
         });
     }
 
-    return false;
+    return result;
 }
 
 World.prototype.updatePlayers = function(players) {
@@ -87,7 +90,7 @@ World.prototype.updatePlayers = function(players) {
         var player = this.players[username];
         var remotePlayer = players[username];
 
-        if(this.players[username] && player.last_updated >= this.players[username]) {
+        if(this.players[username] && player.last_updated > this.players[username].last_updated) {
             player.x = remotePlayer.x;
             player.z = remotePlayer.z;
             player.last_updated = remotePlayer.last_updated;
@@ -98,13 +101,11 @@ World.prototype.updatePlayers = function(players) {
 }
 
 World.prototype.toWorld = function(x, y) {
-    // This is MUCH more elegant in Lua; using commas to seperate values is much more intuitive than using them as operators..
-    return {x: this.translateX + (x * this.scale), z: this.translateY + (y * this.scale)};
+    return {x: this.translateX - (x / this.scale), z: this.translateY - (y / this.scale)};
 }
 
 World.prototype.isVisible = function(context, x, z) {
-    return true;
-    return x >= this.translateX && x <= this.translateX + (context.canvas.width * this.scale) && z >= this.translateY && z <= this.translateY + (context.canvas.height * this.scale);
+    return x >= this.translateX && x <= this.translateX + (context.canvas.width / this.scale) && z >= this.translateY && z <= this.translateY + (context.canvas.height / this.scale);
 }
 
 World.prototype.translate = function(x, y) {
@@ -112,7 +113,7 @@ World.prototype.translate = function(x, y) {
     this.translateY += y;
 }
 
-World.prototype.zoom = function(scaleFactor) {
+World.prototype.zoom = function(scaleFactor, targetX, targetY) {
     var oldScale = this.scale;
 
     this.setScale(this.scale + scaleFactor);
@@ -120,7 +121,7 @@ World.prototype.zoom = function(scaleFactor) {
     // Thanks to Vasiliy Stavenko (http://stackoverflow.com/questions/2916081/zoom-in-on-a-point-using-scale-and-translate)
     if(oldScale != this.scale) {
         var scaleProduct = oldScale * oldScale + oldScale * scaleFactor;
-        this.translate((event.clientX * scaleFactor) / scaleProduct, (event.clientY * scaleFactor) / scaleProduct);
+        this.translate((targetX * scaleFactor) / scaleProduct, (targetY * scaleFactor) / scaleProduct);
     }
 }
 
@@ -132,10 +133,13 @@ World.prototype.render = function(context) {
         // Render Chunks
         var topLeft = this.toWorld(0, 0);
         var bottomRight = this.toWorld(context.canvas.width, context.canvas.height);
+        var x1 = Math.floor(topLeft.x / Chunk.Size);
+        var z1 = Math.floor(topLeft.z / Chunk.Size);
+        var x2 = x1 + Math.ceil((topLeft.x - bottomRight.x) / Chunk.Size) + 1;
+        var z2 = z1 + Math.ceil((topLeft.z - bottomRight.z) / Chunk.Size) + 1;
 
-        // This may seem overwhelming, but it's just iterating over tiles that are (partially / fully) visible.
-        for(var x = Math.floor(topLeft.x / Chunk.Size); x < Math.ceil(topLeft.x / Chunk.Size) + Math.ceil(bottomRight.z / Chunk.Size); x++) {
-            for(var z = Math.floor(topLeft.z / Chunk.Size); z < Math.ceil(topLeft.z / Chunk.Size) + Math.ceil(bottomRight.z / Chunk.Size); z++) {
+        for(var x = x1; x < x2; x++) {
+            for(var z = z1; z < z2; z++) {
                 var chunk = this.getChunk(x, z);
 
                 if(chunk) {
