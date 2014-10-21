@@ -1,7 +1,7 @@
 <?php
     header('Content-Type: text');
 
-    if(substr($_SERVER['REMOTE_ADDR'], 0, 8) != '192.168.' || $_SERVER['REMOTE_ADDR'] != '127.0.0.1') {
+    if(!(substr($_SERVER['REMOTE_ADDR'], 0, 8) == '192.168.' || $_SERVER['REMOTE_ADDR'] == '127.0.0.1')) {
         echo 'This script can only be ran by the server host.'; die;
     }
 
