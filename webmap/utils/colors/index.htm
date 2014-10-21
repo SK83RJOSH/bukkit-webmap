@@ -1,0 +1,254 @@
+<html>
+    <head>
+        <title>Block Tool</title>
+        <script>
+            block_colors = {
+                'UNKNOWN': [255, 0, 255, 255],
+                'AIR': [0, 0, 0, 0],
+                'STONE': [126, 126, 126, 255],
+                'GRASS': [148, 148, 148, 255],
+                'DIRT': [135, 97, 67, 255],
+                'COBBLESTONE': [123, 123, 123, 255],
+                'WOOD': [0, 0, 0, 0],
+                'SAPLING': [0, 0, 0, 0],
+                'BEDROCK': [84, 84, 84, 255],
+                'WATER': [0, 0, 0, 0],
+                'STATIONARY_WATER': [0, 0, 0, 0],
+                'LAVA': [0, 0, 0, 0],
+                'STATIONARY_LAVA': [0, 0, 0, 0],
+                'SAND': [219, 211, 160, 255],
+                'GRAVEL': [127, 124, 123, 255],
+                'GOLD_ORE': [143, 140, 125, 255],
+                'IRON_ORE': [136, 130, 127, 255],
+                'COAL_ORE': [115, 115, 115, 255],
+                'LOG': [0, 0, 0, 0],
+                'LEAVES': [0, 0, 0, 0],
+                'SPONGE': [195, 196, 85, 255],
+                'GLASS': [218, 241, 244, 255],
+                'LAPIS_ORE': [102, 112, 135, 255],
+                'LAPIS_BLOCK': [39, 67, 138, 255],
+                'DISPENSER': [0, 0, 0, 0],
+                'SANDSTONE': [218, 210, 159, 255],
+                'NOTE_BLOCK': [0, 0, 0, 0],
+                'BED_BLOCK': [0, 0, 0, 0],
+                'POWERED_RAIL': [0, 0, 0, 0],
+                'DETECTOR_RAIL': [120, 101, 89, 255],
+                'PISTON_STICKY_BASE': [0, 0, 0, 0],
+                'WEB': [220, 220, 220, 255],
+                'LONG_GRASS': [0, 0, 0, 0],
+                'DEAD_BUSH': [0, 0, 0, 0],
+                'PISTON_BASE': [0, 0, 0, 0],
+                'PISTON_EXTENSION': [0, 0, 0, 0],
+                'WOOL': [0, 0, 0, 0],
+                'PISTON_MOVING_PIECE': [0, 0, 0, 0],
+                'YELLOW_FLOWER': [0, 0, 0, 0],
+                'RED_ROSE': [0, 0, 0, 0],
+                'BROWN_MUSHROOM': [138, 106, 84, 255],
+                'RED_MUSHROOM': [195, 54, 56, 255],
+                'GOLD_BLOCK': [249, 236, 79, 255],
+                'IRON_BLOCK': [219, 219, 219, 255],
+                'DOUBLE_STEP': [0, 0, 0, 0],
+                'STEP': [0, 0, 0, 0],
+                'BRICK': [147, 100, 87, 255],
+                'TNT': [154, 78, 56, 255],
+                'BOOKSHELF': [108, 88, 58, 255],
+                'MOSSY_COBBLESTONE': [104, 121, 104, 255],
+                'OBSIDIAN': [20, 18, 30, 255],
+                'TORCH': [0, 0, 0, 0],
+                'FIRE': [0, 0, 0, 0],
+                'MOB_SPAWNER': [26, 40, 49, 255],
+                'WOOD_STAIRS': [0, 0, 0, 0],
+                'CHEST': [0, 0, 0, 0],
+                'REDSTONE_WIRE': [0, 0, 0, 0],
+                'DIAMOND_ORE': [129, 140, 143, 255],
+                'DIAMOND_BLOCK': [98, 219, 214, 255],
+                'WORKBENCH': [0, 0, 0, 0],
+                'CROPS': [0, 0, 0, 0],
+                'SOIL': [0, 0, 0, 0],
+                'FURNACE': [96, 96, 96, 255],
+                'BURNING_FURNACE': [0, 0, 0, 0],
+                'SIGN_POST': [0, 0, 0, 0],
+                'WOODEN_DOOR': [0, 0, 0, 0],
+                'LADDER': [121, 95, 53, 255],
+                'RAILS': [0, 0, 0, 0],
+                'COBBLESTONE_STAIRS': [0, 0, 0, 0],
+                'WALL_SIGN': [0, 0, 0, 0],
+                'LEVER': [106, 89, 64, 255],
+                'STONE_PLATE': [0, 0, 0, 0],
+                'IRON_DOOR_BLOCK': [0, 0, 0, 0],
+                'WOOD_PLATE': [0, 0, 0, 0],
+                'REDSTONE_ORE': [133, 107, 107, 255],
+                'GLOWING_REDSTONE_ORE': [0, 0, 0, 0],
+                'REDSTONE_TORCH_OFF': [93, 63, 38, 255],
+                'REDSTONE_TORCH_ON': [168, 76, 41, 255],
+                'STONE_BUTTON': [0, 0, 0, 0],
+                'SNOW': [240, 251, 251, 255],
+                'ICE': [125, 173, 255, 255],
+                'SNOW_BLOCK': [0, 0, 0, 0],
+                'CACTUS': [15, 113, 27, 255],
+                'CLAY': [159, 164, 177, 255],
+                'SUGAR_CANE_BLOCK': [0, 0, 0, 0],
+                'JUKEBOX': [107, 73, 55, 255],
+                'FENCE': [0, 0, 0, 0],
+                'PUMPKIN': [193, 118, 21, 255],
+                'NETHERRACK': [111, 54, 53, 255],
+                'SOUL_SAND': [85, 64, 52, 255],
+                'GLOWSTONE': [144, 118, 70, 255],
+                'PORTAL': [87, 10, 191, 255],
+                'JACK_O_LANTERN': [0, 0, 0, 0],
+                'CAKE_BLOCK': [0, 0, 0, 0],
+                'DIODE_BLOCK_OFF': [0, 0, 0, 0],
+                'DIODE_BLOCK_ON': [0, 0, 0, 0],
+                'LOCKED_CHEST': [0, 0, 0, 0],
+                'STAINED_GLASS': [0, 0, 0, 0],
+                'TRAP_DOOR': [0, 0, 0, 0],
+                'MONSTER_EGGS': [0, 0, 0, 0],
+                'SMOOTH_BRICK': [0, 0, 0, 0],
+                'HUGE_MUSHROOM_1': [0, 0, 0, 0],
+                'HUGE_MUSHROOM_2': [0, 0, 0, 0],
+                'IRON_FENCE': [0, 0, 0, 0],
+                'THIN_GLASS': [0, 0, 0, 0],
+                'MELON_BLOCK': [0, 0, 0, 0],
+                'PUMPKIN_STEM': [0, 0, 0, 0],
+                'MELON_STEM': [0, 0, 0, 0],
+                'VINE': [111, 111, 111, 255],
+                'FENCE_GATE': [0, 0, 0, 0],
+                'BRICK_STAIRS': [0, 0, 0, 0],
+                'SMOOTH_STAIRS': [0, 0, 0, 0],
+                'MYCEL': [0, 0, 0, 0],
+                'WATER_LILY': [0, 0, 0, 0],
+                'NETHER_BRICK': [45, 23, 27, 255],
+                'NETHER_FENCE': [0, 0, 0, 0],
+                'NETHER_BRICK_STAIRS': [0, 0, 0, 0],
+                'NETHER_WARTS': [0, 0, 0, 0],
+                'ENCHANTMENT_TABLE': [0, 0, 0, 0],
+                'BREWING_STAND': [125, 103, 82, 255],
+                'CAULDRON': [71, 71, 71, 255],
+                'ENDER_PORTAL': [0, 0, 0, 0],
+                'ENDER_PORTAL_FRAME': [0, 0, 0, 0],
+                'ENDER_STONE': [0, 0, 0, 0],
+                'DRAGON_EGG': [13, 9, 16, 255],
+                'REDSTONE_LAMP_OFF': [70, 43, 27, 255],
+                'REDSTONE_LAMP_ON': [119, 89, 55, 255],
+                'WOOD_DOUBLE_STEP': [0, 0, 0, 0],
+                'WOOD_STEP': [0, 0, 0, 0],
+                'COCOA': [0, 0, 0, 0],
+                'SANDSTONE_STAIRS': [0, 0, 0, 0],
+                'EMERALD_ORE': [110, 129, 116, 255],
+                'ENDER_CHEST': [0, 0, 0, 0],
+                'TRIPWIRE_HOOK': [0, 0, 0, 0],
+                'TRIPWIRE': [0, 0, 0, 0],
+                'EMERALD_BLOCK': [81, 217, 117, 255],
+                'SPRUCE_WOOD_STAIRS': [0, 0, 0, 0],
+                'BIRCH_WOOD_STAIRS': [0, 0, 0, 0],
+                'JUNGLE_WOOD_STAIRS': [0, 0, 0, 0],
+                'COMMAND': [0, 0, 0, 0],
+                'BEACON': [117, 221, 216, 255],
+                'COBBLE_WALL': [0, 0, 0, 0],
+                'FLOWER_POT': [119, 66, 51, 255],
+                'CARROT': [0, 0, 0, 0],
+                'POTATO': [0, 0, 0, 0],
+                'WOOD_BUTTON': [0, 0, 0, 0],
+                'SKULL': [0, 0, 0, 0],
+                'ANVIL': [0, 0, 0, 0],
+                'TRAPPED_CHEST': [0, 0, 0, 0],
+                'GOLD_PLATE': [0, 0, 0, 0],
+                'IRON_PLATE': [0, 0, 0, 0],
+                'REDSTONE_COMPARATOR_OFF': [0, 0, 0, 0],
+                'REDSTONE_COMPARATOR_ON': [0, 0, 0, 0],
+                'DAYLIGHT_DETECTOR': [131, 116, 95, 255],
+                'REDSTONE_BLOCK': [171, 28, 9, 255],
+                'QUARTZ_ORE': [125, 85, 80, 255],
+                'HOPPER': [67, 67, 67, 255],
+                'QUARTZ_BLOCK': [236, 233, 226, 255],
+                'QUARTZ_STAIRS': [0, 0, 0, 0],
+                'ACTIVATOR_RAIL': [104, 83, 71, 255],
+                'DROPPER': [0, 0, 0, 0],
+                'STAINED_CLAY': [0, 0, 0, 0],
+                'STAINED_GLASS_PANE': [0, 0, 0, 0],
+                'LEAVES_2': [0, 0, 0, 0],
+                'LOG_2': [0, 0, 0, 0],
+                'ACACIA_STAIRS': [0, 0, 0, 0],
+                'DARK_OAK_STAIRS': [0, 0, 0, 0],
+                'HAY_BLOCK': [169, 140, 16, 255],
+                'CARPET': [0, 0, 0, 0],
+                'HARD_CLAY': [0, 0, 0, 0],
+                'COAL_BLOCK': [19, 19, 19, 255],
+                'PACKED_ICE': [165, 195, 245, 255],
+                'DOUBLE_PLANT': [0, 0, 0, 0]
+            };
+
+            var processed = 0;
+
+            for(var block in block_colors) {
+                if(block != 'UNKNOWN' && block != 'AIR') {
+                    var image = new Image();
+
+                    image.block = block;
+                    image.addEventListener('error', function() {
+                        if(!this.exhausted) {
+                            if(this.src.indexOf('_top') == -1) {
+                                this.src = this.src.replace('.png', '_top.png');
+                            } else if(this.src.indexOf('_top') != -1) {
+                                this.src = 'blocks/' + this.block.split('_').reverse().join('_').toLowerCase() + '.png';
+                                this.exhausted = true;
+                            } else if(this.src.indexOf('blocks/' + this.block.split('_').reverse().join('_').toLowerCase() + '.png') != -1) {
+                                // Manual fallbacks... that's work
+                            } else {
+                                this.exhausted = true;
+                            }
+                        } else {
+                            console.error(this.block + ' needs manual retreival...');
+                        }
+                    });
+                    image.addEventListener('load', function(event) {
+                        var color = block_colors[this.block];
+                        var canvas = document.createElement('canvas');
+                        var context = canvas.getContext('2d');
+
+                        canvas.width = this.width;
+                        canvas.height = this.height;
+
+                        context.drawImage(this, 0, 0);
+
+                        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        var validColors = 0;
+
+                        for(var pixel = 0; pixel < imageData.data.length / 4; pixel++) {
+                            var pixelColor = [
+                                imageData.data[(pixel * 4) + 0],
+                                imageData.data[(pixel * 4) + 1],
+                                imageData.data[(pixel * 4) + 2],
+                                imageData.data[(pixel * 4) + 3]
+                            ];
+
+                            if(pixelColor[0] != 0 || pixelColor[1] != 0 || pixelColor[2] != 0) {
+                                color[0] += pixelColor[0];
+                                color[1] += pixelColor[1];
+                                color[2] += pixelColor[2];
+
+                                validColors++;
+                            }
+                        }
+
+                        color[0] = Math.round(color[0] / validColors);
+                        color[1] = Math.round(color[1] / validColors);
+                        color[2] = Math.round(color[2] / validColors);
+                        color[3] = 255;
+
+                        var outputContext = document.getElementById('canvas').getContext('2d');
+
+                        outputContext.fillStyle = 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', 255)';
+                        outputContext.fillRect((processed % (outputContext.canvas.width / 6)) * 6, Math.floor(processed / (outputContext.canvas.width / 6)) * 6, 6, 6);
+
+                        processed++;
+                    });
+                    image.src = 'blocks/' + block.toLowerCase() + '.png';
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+</html>
