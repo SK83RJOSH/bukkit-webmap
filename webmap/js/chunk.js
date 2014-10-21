@@ -21,15 +21,21 @@ Chunk.prototype.updateImageData = function() {
         var color = block.getColor();
         var light = 0;
 
-        // TODO: Figure out why this doesn't work as expected (Scope issues?...)
-        // if(currentWorld.getBlock(block.x, block.z + 1)) {
-        //     console.log(block.x);
-        //     light = 100;
-        // }
+        // TODO: Figure out why this getBlock(...) doesn't work as expected, scope issues?
+        var neighborNorth = world.getBlock(block.x, block.z - 1);
 
-        imageData.data[pixel + 0] = Math.min(255, color[0] + light);
-        imageData.data[pixel + 1] = Math.min(255, color[1] + light);
-        imageData.data[pixel + 2] = Math.min(255, color[2] + light);
+        if(neighborNorth) {
+            // This should shade things similarly to how the maps ingame do
+            if(neighborNorth.y < block.y) {
+                light = 25;
+            } else if(neighborNorth.y > block.y) {
+                light = -25;
+            }
+        }
+
+        imageData.data[pixel + 0] = Math.max(0, Math.min(255, color[0] + light));
+        imageData.data[pixel + 1] = Math.max(0, Math.min(255, color[1] + light));
+        imageData.data[pixel + 2] = Math.max(0, Math.min(255, color[2] + light));
         imageData.data[pixel + 3] = color[3];
 
         context.putImageData(imageData, 0, 0);

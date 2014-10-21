@@ -1,5 +1,6 @@
-function Block(x, z, material) {
+function Block(x, y, z, material) {
     this.x = x;
+    this.y = y;
     this.z = z;
     this.material = material;
 }

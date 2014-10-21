@@ -50,14 +50,17 @@ World.prototype.updateChunk = function(x, z, blocks) {
         chunk.update(blocks);
 
         if(blocks) {
-            // TODO: Queue & sparsely process chunk updates
-            // for(neighborX = x - 1; neighborX < x + 1; neighborX++) {
-            //     for(neightborZ = z - 1; neightborZ < z + 1; neightborZ++) {
-            //         if(neighborX != x || neightborZ != z) {
-            //             this.updateChunk(neighborX, neightborZ);
-            //         }
-            //     }
-            // }
+            // TODO: Queue & sparsely process chunk updates (requestAnimationFrame works for now)
+            for(neighborX = x - 1; neighborX < x + 1; neighborX++) {
+                for(neightborZ = z - 1; neightborZ < z + 1; neightborZ++) {
+                    if(neighborX != x || neightborZ != z) {
+                        window.requestAnimationFrame(function() {
+                            this.updateChunk(neighborX, neightborZ);
+                            redrawCanvas();
+                        });
+                    }
+                }
+            }
         }
     }
 }

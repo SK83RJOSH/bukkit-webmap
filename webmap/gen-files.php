@@ -21,6 +21,7 @@
                         array_push($blocks, array(
                             'material' => $materials[rand(1, sizeof($materials) - 1)],
                             'x' => ($x * 16) + $block_x,
+                            'y' => rand(0, 3),
                             'z' => ($z * 16) + $block_z
                         ));
                     }

@@ -110,7 +110,7 @@ function fetchChunks() {
                         var blocks = [];
 
                         response.forEach(function(block) {
-                            blocks.push(new Block(block.x, block.z, block.material));
+                            blocks.push(new Block(block.x, block.y, block.z, block.material));
                         });
 
                         world.updateChunk(blocks[0].x / Chunk.Size, blocks[0].z / Chunk.Size, blocks);
