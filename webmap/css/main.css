@@ -6,6 +6,7 @@
 
 html, body {
 	font-family: 'Minecraft', consolas, serif;
+	font-size: 14px;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
@@ -54,8 +55,6 @@ footer p {
 	position: fixed;
 	right: 15;
 	bottom: 18;
-	font-size: 14px;
-	font-family: 'Minecraft', consolas, serif;
 	line-height: 14px;
 	color: gray;
 }
