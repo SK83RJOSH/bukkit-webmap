@@ -4,6 +4,12 @@ bukkit-webmap
 A webmap plugin for bukkit (currently only the web portion).
 
 
+Preview
+=============
+
+A live preview of this plugin can be found here: http://server.sk83rjo.sh/webmap/
+
+
 Contribution Guide
 =============
 
